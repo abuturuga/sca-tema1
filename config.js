@@ -9,7 +9,7 @@ module.exports = {
     address: 'localhost',
     name: 'vendor'
   },
-  bank: {
+  broker: {
     port: 4002,
     address: 'localhost',
     name: 'bank'

@@ -2,16 +2,16 @@ const Socket = require('net').Socket;
 
 class ClientSocket {
 
-  constructor({ address, port, target }) {
+  constructor({ address, port, name }) {
     this.config = { address, port };
-    this.target = target;
+    this.target = name;
     this.socket = new Socket();
   }
 
   connect() {
     return new Promise((resolve, reject) => {
       this.socket.connect(this.config, () => {
-        console.log('init connection to client' + this.target);
+        console.log(`init connection to the server: ${this.target}`);
         resolve();
       });
     })
@@ -21,6 +21,8 @@ class ClientSocket {
     this.socket.write(JSON.stringify(payload), 'utf8', (err) => {
       console.log(err);
     });
+
+    return this;
   }
 
   onData(callback) {
