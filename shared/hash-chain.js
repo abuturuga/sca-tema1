@@ -17,8 +17,10 @@ function sha256(string) {
  */
 function generate(size) {
   const secret = Math.random().toString(36).substring(2, 15),
-        chain = [];
-
+        chain = [],
+        root = sha256(secret);
+  
+  chain.push(root);
   for(let i = 0; i < size; i++) {
     chain.push(sha256(chain[i]));
   }
@@ -33,7 +35,12 @@ function generate(size) {
  * @param {string} index Current index element 
  */
 function validate(root, hash, index) {
+  let current = root;
+  for(let i = 0; i < index; i++) {
+    current = sha256(current);
+  }
 
+  return current === hash;
 }
 
 module.exports = {

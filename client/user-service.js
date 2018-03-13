@@ -8,6 +8,7 @@ class UserService {
   constructor() {
     this.keys = KeyGenerator();
     this.hashChain = [];
+    this.lastPay = 0;
     this.credentials = {
       id: 'user1',
       password: 'pass'
@@ -25,13 +26,20 @@ class UserService {
     return Object.assign({}, this.credentials, { publicKey });
   }
 
-  
+  /**
+   * Genereate a new hash chain based on the half of the 
+   * amount of available money
+   */
   generateHashChain() {
-    const { creditLimit } = this.paywordCertificate;
+    const { creditLimit } = this.paywordCertificate.info;
     this.chainSize = creditLimit / 2;
     this.hashChain = HashChain.generate(this.chainSize);
   }
 
+  /**
+   * Validate the payword certificate recevied from the bank
+   * @param {Object} certificate Payword certificate
+   */
   isValidCertificate(certificate) {
     const { bankPublicKey, signature } = certificate,
           certCopy = Object.assign({}, certificate);
@@ -54,13 +62,37 @@ class UserService {
     return false;
   }
 
-  commit() {
-    return {
+  /**
+   * Build a new commit for the vendor
+   * @returns {Object} User commit
+   */
+  buildCommit() {
+    const commit = {
       vendorId: 0,
       certificate: this.paywordCertificate,
       c0: this.hashChain[0],
       date: (new Date).toISOString(),
       chainSize: this.chainSize
+    };
+
+    const { privateKey } = this.keys;
+    commit.signature = SignService.sign(commit.toString(), privateKey);
+    return commit;
+  }
+
+  pay(amount) {
+    if(amount >= this.chainSize - 1 || amount <= 0) {
+      return null;
+    }
+    const index = this.lastPay + amount;
+
+    if(index >= this.chainSize - 1) {
+      return null;
+    }
+
+    return {
+      index,
+      hash: this.hashChain[index]
     }
   }
 

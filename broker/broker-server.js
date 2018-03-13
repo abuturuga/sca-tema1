@@ -35,5 +35,4 @@ class BrokerServer {
 
 }
 
-const server = new BrokerServer(config.broker);
-server.listen();
+

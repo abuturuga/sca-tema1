@@ -9,6 +9,7 @@ class BrokerService {
     this.name = name;
     this.address = address;
 
+    this.vendors = {};
     this.users = {};
     this.paywordCertificates = [];
   }
@@ -56,7 +57,21 @@ class BrokerService {
     return this.buildPaywordCertificate(user);
   }
 
+  buildVendorCertificate(vendor) {
+    const certificate = {
+      vendorId: vendor.id,
+      bankId: this.name,
+      bankPublicKey: this.keys.publicKey,
+    };
 
+    certificate.signature = SignService.sign(certificate.toString(), this.keys.privateKey);
+    this.vendors[vendor.id] = certificate;
+    return certificate;
+  }
+
+  registerVendor(vendor) {
+    return this.buildVendorCertificate(vendor);
+  }
 
 }
 
