@@ -61,7 +61,7 @@ class BrokerService {
     const certificate = {
       vendorId: vendor.id,
       bankId: this.name,
-      bankPublicKey: this.keys.publicKey,
+      bankPublicKey: this.keys.publicKey
     };
 
     certificate.signature = SignService.sign(certificate.toString(), this.keys.privateKey);

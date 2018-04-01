@@ -80,6 +80,10 @@ class UserService {
     return commit;
   }
 
+  /**
+   * Build a pay object for the vendor
+   * @param {Number} amount Money to send
+   */
   pay(amount) {
     if(amount >= this.chainSize - 1 || amount <= 0) {
       return null;

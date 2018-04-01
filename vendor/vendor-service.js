@@ -42,7 +42,7 @@ class Vendor {
   isValidCertificate(certificate) {
     const { bankPublicKey, signature } = certificate,
           certCopy = Object.assign({}, certificate);
-
+    
     delete certCopy.signature;
     SignService.verify(bankPublicKey, signature, certCopy.toString());
   }
