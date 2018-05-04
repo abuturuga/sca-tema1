@@ -5,6 +5,8 @@ const SocketServer      = require('../socket/server'),
       readline         = require('readline'),
       actions           = require('../shared/actions');
 
+const prefix = 'Vendor:: ';
+
 class VendorServer {
 
   constructor(config, broker) {
@@ -18,11 +20,14 @@ class VendorServer {
   handleData(data, socket) {
     switch (data.type) {
       case actions.SEND_COMMIT: {
-        const paywordCertificate = this.service.registerClient(data.payload, USER_CLIENT);
-        socket.write(JSON.stringify({
-          type: actions.SEND_USER_PAYWORD_CERTIFICATE,
-          payload: paywordCertificate
-        }));
+        const isValid = this.service.addCommit(data.payload);
+
+        if (isValid) {
+          console.log(`${prefix} commit is valid`);
+          socket.write(JSON.stringify({
+            type: actions.OPERATION_SUCCEED
+          }));
+        }
         break;
       }
     }
@@ -86,6 +91,5 @@ rl.on('line', line => {
   }
 });
 
-const prefix = 'Command> ';
 rl.setPrompt(prefix, prefix.length);
 rl.prompt();

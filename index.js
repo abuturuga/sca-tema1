@@ -47,8 +47,8 @@ function sendCommit() {
 }
 
 function pay() {
-  const pay = user.pay(5),
-        isValid = vendor.addPayment(pay);
+  const payment = user.pay(5),
+        isValid = vendor.addPayment(payment);
 
   if(isValid === true) {
     console.log('Payment is valid')

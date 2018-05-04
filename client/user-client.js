@@ -4,6 +4,7 @@ const SocketClient     = require('../socket/client'),
       actions          = require('../shared/actions'),
       readline         = require('readline');
 
+const prefix = 'User:: ';
 
 class UserClient {
 
@@ -22,7 +23,7 @@ class UserClient {
     return new Promise((resolve, reject) => {
       this.brokerSocket.send({type: actions.REGISTER_USER, payload: credentials})
         .onData(({type, payload}) => {
-          if(actions.SEND_USER_PAYWORD_CERTIFICATE) {
+          if(actions.SEND_USER_PAYWORD_CERTIFICATE === type) {
             this.service.setPaywordCertificate(payload);
             resolve(payload);
           }
@@ -53,31 +54,40 @@ class UserClient {
   }
 
   async sendCommit() {
-    try {
-      
-    } catch(error) {
-      console.log(error);
-      return error;
-    }
+    const commit = this.service.buildCommit();
+    await this.vendorSocket.connect();
+    this.vendorSocket.send({type: actions.SEND_COMMIT, payload: commit})
+      .onData(({type}) => {
+        if (type === actions.OPERATION_SUCCEED) {
+          console.log(`${prefix} commit is ok`);
+        }
+      });
   }
 
 }
 
-const client = new UserClient(config.user, config.broker);
+const client = new UserClient(config.vendor, config.broker);
 rl = readline.createInterface(process.stdin, process.stdout);
 rl.on('line', line => {
-  switch (line.trim()) {
+  const args = line.trim().split(':');
+  switch (args[0]) {
     case 'register_broker':
       client.registerToBroker();
       break;
     case 'register_vendor':
       clinet.registerToVendor();
       break;
+    case 'send_commit':
+      client.sendCommit();
+      break;
+    case 'pay':
+      client.pay(parseInt(args[1]));
+      break;
     default:
       console.log('This command is unknown');
   }
 });
 
-const prefix = 'Command> ';
+
 rl.setPrompt(prefix, prefix.length);
 rl.prompt();
