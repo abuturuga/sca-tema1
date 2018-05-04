@@ -50,10 +50,21 @@ function pay() {
   const pay = user.pay(5),
         isValid = vendor.addPayment(pay);
 
-  if(isValid) {
+  if(isValid === true) {
     console.log('Payment is valid')
   } else {
-    console.log('Payment is invalid');
+    console.log('Payment is invalid', isValid);
+  }
+}
+
+function sendToBank() {
+  const payment = vendor.sendCommit(),
+        isValid = broker.registerVendorPayment(payment);
+
+  if (isValid) {
+    console.log('Vendor to bank payment is valid');
+  } else {
+    console.log('Vendor is invalid');
   }
 }
 
@@ -61,3 +72,4 @@ registerUserToBroker();
 registerVendorToBank();
 sendCommit();
 pay();
+sendToBank();

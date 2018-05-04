@@ -1,5 +1,5 @@
-const PaywordComponent = require('../shared/payword-component');
-
+const PaywordComponent = require('../shared/payword-component'),
+      HashChain        = require('../shared/hash-chain');
 
 const PAYWORD_CERTIFICATE = 'PAYWORD_CERTIFICATE';
 const VENDOR_CERTIFICATE = 'VENDOR_CERTIFICATE';
@@ -97,6 +97,16 @@ class BrokerService extends PaywordComponent {
     return certificate;
   }
 
+  registerVendorPayment(payment) {
+    const { commit, ci, i } = payment,
+          { c0 } = commit;
+
+    if ( HashChain.validate(c0, ci, i - 1) ) {
+      return true;
+    }
+
+    return false;
+  }
 }
 
 module.exports = {

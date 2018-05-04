@@ -65,6 +65,8 @@ class UserService extends PaywordComponent {
     }
 
     return {
+      userId: this.id,
+      userIp: this.ip,
       index,
       hash: this.hashChain[index]
     }

@@ -19,7 +19,7 @@ function generate(size) {
   const secret = Math.random().toString(36).substring(2, 15),
         chain = [],
         root = sha256(secret);
-  
+
   chain.push(root);
   for(let i = 0; i < size; i++) {
     chain.push(sha256(chain[i]));
@@ -31,12 +31,12 @@ function generate(size) {
 /**
  * Validate if a given hash belongs to a specific chain
  * @param {string} root Element c0
- * @param {string} hash Current hash element 
- * @param {string} index Current index element 
+ * @param {string} hash Current hash element
+ * @param {string} index Current index element
  */
 function validate(root, hash, index) {
   let current = root;
-  for(let i = 0; i < index; i++) {
+  for(let i = 0; i <= index; i++) {
     current = sha256(current);
   }
 
