@@ -1,17 +1,20 @@
-const Broker = require('./broker/broker-service'),
-      User   = require('./client/user-service'),
-      Vendor = require('./vendor/vendor-service'),
-      config = require('./config'),
-      HashChain = require('./shared/hash-chain');
+const {
+        BrokerService,
+        USER_CLIENT,
+        VENDOR_CLIENT } = require('./broker/broker-service'),
+        User            = require('./client/user-service'),
+        Vendor          = require('./vendor/vendor-service'),
+        config          = require('./config'),
+        HashChain       = require('./shared/hash-chain');
 
-const user = new User(),
-      broker = new Broker(config.broker),
-      vendor = new Vendor();
+const user   = new User(config.user),
+      broker = new BrokerService(config.broker),
+      vendor = new Vendor(config.vendor);
 
 function registerUserToBroker() {
-  const credentials = user.createUserRegistration(),
-        certificate = broker.registerUser(credentials);
-  
+  const credentials = user.getRegisterCredentials(),
+        certificate = broker.registerClient(credentials, USER_CLIENT);
+
   const hasSet = user.setPaywordCertificate(certificate);
   if(hasSet) {
       console.log('Register user to broker');
@@ -21,21 +24,21 @@ function registerUserToBroker() {
 }
 
 function registerVendorToBank() {
-  const credentials = vendor.getCredentials(),
-        certificate = broker.registerVendor(credentials);
-  
+  const credentials = vendor.getRegisterCredentials(),
+        certificate = broker.registerClient(credentials, VENDOR_CLIENT);
+
   const hasSet = vendor.setBrokerCertificate(certificate);
   if(hasSet) {
     console.log('Vendor certificate with success')
   } else {
-    console.log('Vendor certificate with fail') 
+    console.log('Vendor certificate with fail')
   }
 }
 
 function sendCommit() {
   const commit = user.buildCommit(),
         isValid = vendor.addCommit(commit);
-  
+
   if(isValid) {
     console.log('User commit is valid')
   } else {

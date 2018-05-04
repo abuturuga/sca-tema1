@@ -1,31 +1,29 @@
-const SignService      = require('../shared/sign'),
-      KeyGenerator     = require('../shared/keys-generator');
+const PaywordComponent = require('../shared/payword-component');
 
 
-class BrokerService {
+const PAYWORD_CERTIFICATE = 'PAYWORD_CERTIFICATE';
+const VENDOR_CERTIFICATE = 'VENDOR_CERTIFICATE';
 
-  constructor({ name, address }) {
-    this.keys = KeyGenerator();
-    this.name = name;
-    this.address = address;
+const USER_CLIENT = 'USER_CLIENT';
+const VENDOR_CLIENT = 'VENDOR_CLIENT';
 
-    this.vendors = {};
-    this.users = {};
-    this.paywordCertificates = [];
+class BrokerService extends PaywordComponent {
+
+  constructor(config) {
+    super(config);
+
+    this.clients = {};
   }
 
   /**
-   * Build a new payword certificate based on the
-   * user credentials.
+   * Build a new payword certificate for an user
    * @param  {Object} user  User credentials
    * @return {Object}       Payword certificate
    */
   buildPaywordCertificate(user) {
-    const certificate = {
+    return {
       userId: user.id,
       userIP: user.ip,
-      bankId: this.name,
-      bankPublicKey: this.keys.publicKey,
       userPublicKey: user.publicKey,
       exp: new Date('2018-04-04'),
       info: {
@@ -33,46 +31,76 @@ class BrokerService {
         creditLimit: 200
       }
     };
-
-    certificate.signature = SignService.sign(certificate.toString(), this.keys.privateKey);
-    this.paywordCertificates.push(certificate);
-    return certificate;
   }
 
   /**
-   * Register a new user into the bank.
-   * @param  {Object}   user User credentials
-   * @return {Object}        User payword certificate
+   * Build a vendor ceritificate for a vendor
+   * @param {Object} vendor Vendor credentials
    */
-  registerUser(user) {
-    const { id, password, publicKey, ip } = user;
-    if(this.users[id]) return;
-
-    this.users[id] = {
-      password,
-      publicKey,
-      ip
-    };
-
-    return this.buildPaywordCertificate(user);
-  }
-
   buildVendorCertificate(vendor) {
-    const certificate = {
+   return {
       vendorId: vendor.id,
-      bankId: this.name,
-      bankPublicKey: this.keys.publicKey
-    };
-
-    certificate.signature = SignService.sign(certificate.toString(), this.keys.privateKey);
-    this.vendors[vendor.id] = certificate;
-    return certificate;
+      vendorIp: vendor.ip,
+      vendorPublicKey: vendor.publicKey
+   }
   }
 
-  registerVendor(vendor) {
-    return this.buildVendorCertificate(vendor);
+  /**
+   * Build a sign certificate based on the client type
+   * @param {string} type Certificate type
+   * @param {object} credentials Client credentials
+   */
+  buildCertificate(type, credentials) {
+    let certificate = {
+      bankPublicKey: this.keys.publicKey,
+      bankId: this.id
+    };
+
+    let payload;
+    switch(type) {
+      case PAYWORD_CERTIFICATE:
+        payload = this.buildPaywordCertificate(credentials);
+        break;
+      case VENDOR_CERTIFICATE:
+        payload = this.buildVendorCertificate(credentials);
+        break;
+    }
+
+    payload = Object.assign({}, payload, certificate);
+    return this.sign(payload);
+  }
+
+  /**
+   * Register a new client and build a propper bank certificate
+   * @param  {object} client Client data and credentials
+   * @param  {object} type   Client type [User | Vendor]
+   * @return {object}        Sign certificate
+   */
+  registerClient(client, type) {
+    const { id, password, publicKey, ip } = client;
+    if(this.clients[id]) return;
+
+    let certificate;
+    if(type === USER_CLIENT) {
+      certificate = this.buildCertificate(PAYWORD_CERTIFICATE, client);
+    } else if(type === VENDOR_CLIENT) {
+      certificate = this.buildCertificate(VENDOR_CERTIFICATE, client);
+    } else {
+      throw new Error('Undefined client type');
+    }
+    this.clients[id] = {
+      publicKey,
+      ip,
+      certificate
+    };
+
+    return certificate;
   }
 
 }
 
-module.exports = BrokerService;
+module.exports = {
+  USER_CLIENT,
+  VENDOR_CLIENT,
+  BrokerService
+};

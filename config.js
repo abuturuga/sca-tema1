@@ -1,17 +1,17 @@
 module.exports = {
-  client: {
+  user: {
     port: 4000,
     address: 'localhost',
-    name: 'client'
+    id: 'client'
   },
   vendor: {
     port: 4001,
     address: 'localhost',
-    name: 'vendor'
+    id: 'vendor'
   },
   broker: {
     port: 4002,
     address: 'localhost',
-    name: 'bank'
+    id: 'bank'
   }
 }

@@ -1,7 +1,10 @@
-const SocketServer     = require('../socket/server'),
-      BrokerService    = require('./broker-service'),
-      config           = require('../config'),
-      actions          = require('../shared/actions');
+const SocketServer      = require('../socket/server'),
+      {
+        BrokerService,
+        USER_CLIENT,
+        VENDOR_CLIENT } = require('./broker-service'),
+      config            = require('../config'),
+      actions           = require('../shared/actions');
 
 class BrokerServer {
 
@@ -34,5 +37,3 @@ class BrokerServer {
   }
 
 }
-
-

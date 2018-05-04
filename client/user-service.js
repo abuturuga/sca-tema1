@@ -1,50 +1,24 @@
-const SignService  = require('../shared/sign'),
-      KeyGenerator = require('../shared/keys-generator'),
-      HashChain    = require('../shared/hash-chain');
+const HashChain        = require('../shared/hash-chain'),
+      PaywordComponent = require('../shared/payword-component');
 
 
-class UserService {
+class UserService extends PaywordComponent {
 
-  constructor() {
-    this.keys = KeyGenerator();
+  constructor(config) {
+    super(config);
+
     this.hashChain = [];
     this.lastPay = 0;
-    this.credentials = {
-      id: 'user1',
-      password: 'pass'
-    };
-
-    this.paywordCertificate = null;
   }
 
   /**
-   * Create an user credentials object in order to register on the broker.
-   * @return {Object}
-   */
-  createUserRegistration() {
-    const { publicKey } = this.keys;
-    return Object.assign({}, this.credentials, { publicKey });
-  }
-
-  /**
-   * Genereate a new hash chain based on the half of the 
+   * Genereate a new hash chain based on the half of the
    * amount of available money
    */
   generateHashChain() {
-    const { creditLimit } = this.paywordCertificate.info;
+    const { creditLimit } = this.certificates['payword'].info;
     this.chainSize = creditLimit / 2;
     this.hashChain = HashChain.generate(this.chainSize);
-  }
-
-  /**
-   * Validate the payword certificate recevied from the bank
-   * @param {Object} certificate Payword certificate
-   */
-  isValidCertificate(certificate) {
-    const { bankPublicKey, signature } = certificate,
-          certCopy = Object.assign({}, certificate);
-    
-    return SignService.verify(bankPublicKey, signature, certCopy.toString());
   }
 
   /**
@@ -52,10 +26,8 @@ class UserService {
    * @param {object} paywordCertificate Broker payword certificate
    */
   setPaywordCertificate(paywordCertificate) {
-    if(this.isValidCertificate(paywordCertificate)) {
-      this.paywordCertificate = paywordCertificate;
+    if (this.registerCertificate('payword', paywordCertificate, 'bankPublicKey')) {
       this.generateHashChain();
-
       return true;
     }
 
@@ -69,15 +41,13 @@ class UserService {
   buildCommit() {
     const commit = {
       vendorId: 0,
-      certificate: this.paywordCertificate,
+      paywordCertificate: this.certificates['payword'],
       c0: this.hashChain[0],
       date: (new Date).toISOString(),
       chainSize: this.chainSize
     };
 
-    const { privateKey } = this.keys;
-    commit.signature = SignService.sign(commit.toString(), privateKey);
-    return commit;
+    return this.sign(commit);
   }
 
   /**

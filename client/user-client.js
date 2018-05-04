@@ -7,8 +7,8 @@ const SocketClient     = require('../socket/client'),
 class UserClient {
 
   constructor() {
-    this.brokerSocket = new SocketClient(config.broker);
-    this.service = new UserService();
+    this.brokerSocket = new SocketClient(config.user);
+    this.service = new UserService(config.user);
     this.vendorSocket = null;
   }
 

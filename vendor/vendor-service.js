@@ -1,13 +1,12 @@
-const SignService      = require('../shared/sign'),
-      KeyGenerator     = require('../shared/keys-generator'),
-      HashChain        = require('../shared/hash-chain');
+const HashChain        = require('../shared/hash-chain'),
+      PaywordComponent = require('../shared/payword-component');
 
-class Vendor {
 
-  constructor() {
-    this.id = 0;
+class Vendor extends PaywordComponent {
+
+  constructor(config) {
+    super(config);
     this.users = {};
-    this.keys = KeyGenerator();
   }
 
   /**
@@ -15,36 +14,7 @@ class Vendor {
    * @returns {Boolean}
    */
   setBrokerCertificate(certificate) {
-    if(this.isValidCertificate(certificate)) {
-      this.bankCertificate = bankCertificate;
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Get vendor credentials to be used for the bank certificate
-   * @returns {Object}
-   */
-  getCredentials() {
-    return {
-      id: this.id,
-      vendorPublicKey: this.keys.publicKey
-    }
-  }
-
-  /**
-   * Verify if the certificate issued by the bank is valid
-   * @param {Object} certificate Vendor certificate
-   * @returns {Boolean}
-   */
-  isValidCertificate(certificate) {
-    const { bankPublicKey, signature } = certificate,
-          certCopy = Object.assign({}, certificate);
-    
-    delete certCopy.signature;
-    SignService.verify(bankPublicKey, signature, certCopy.toString());
+    return this.registerCertificate('broker', certificate, 'bankPublicKey')
   }
 
   /**
@@ -53,30 +23,27 @@ class Vendor {
    * @returns {Boolean}
    */
   isValidCommit(commit) {
-    const { certificate, signature } = commit,
-          { userPublicKey } = certificate,
-          commitCopy = Object.assign({}, commit);
-    
-    delete commitCopy.signature;
-    return SignService.verify(userPublicKey, signature, commitCopy.toString());
+     const { userPublicKey } = commit.paywordCertificate;
+
+     return this.isValid(commit, userPublicKey);
   }
 
   addCommit(commit) {
     if(this.isValidCommit(commit)) {
-      const { certificate } = commit,
-            { userId, info } = certificate;
-      
+      const { paywordCertificate } = commit,
+            { userId, info } = paywordCertificate;
+
       this.userCommit = commit;
       return true;
     }
-    
+
     return false;
   }
 
   addPayment(pay) {
     const { c0, chainSize } = this.userCommit,
           { index, hash } = pay;
-    
+
     if(HashChain.validate(c0, hash, index)) {
       this.lastIndex = index;
       this.lastHash = hash;
@@ -85,7 +52,7 @@ class Vendor {
 
     return false;
   }
-  
+
 }
 
 module.exports = Vendor;
