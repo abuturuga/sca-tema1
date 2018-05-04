@@ -1,15 +1,16 @@
 const SocketClient     = require('../socket/client'),
       UserService      = require('./user-service'),
       config           = require('../config'),
-      actions          = require('../shared/actions');
+      actions          = require('../shared/actions'),
+      readline         = require('readline');
 
 
 class UserClient {
 
-  constructor() {
-    this.brokerSocket = new SocketClient(config.user);
+  constructor(vendor, broker) {
+    this.brokerSocket = new SocketClient(broker);
+    this.vendorSocket = new SocketClient(vendor);
     this.service = new UserService(config.user);
-    this.vendorSocket = null;
   }
 
   /**
@@ -36,10 +37,24 @@ class UserClient {
   async registerToBroker() {
     try {
       await this.brokerSocket.connect();
-      const credentials = this.service.createUserRegistration(),
-            certificate = this.sendRegistration(credentials);
+      const credentials = this.service.getRegisterCredentials(),
+            certificate = await this.sendRegistration(credentials);
 
-      return certificate;
+      const hasSet = this.service.setPaywordCertificate(certificate);
+      if (hasSet) {
+        console.log('User is registred to broker');
+      } else {
+        console.log('Payword certificate is invalid');
+      }
+    } catch(error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  async sendCommit() {
+    try {
+      
     } catch(error) {
       console.log(error);
       return error;
@@ -48,4 +63,21 @@ class UserClient {
 
 }
 
-module.exports = UserClient;
+const client = new UserClient(config.user, config.broker);
+rl = readline.createInterface(process.stdin, process.stdout);
+rl.on('line', line => {
+  switch (line.trim()) {
+    case 'register_broker':
+      client.registerToBroker();
+      break;
+    case 'register_vendor':
+      clinet.registerToVendor();
+      break;
+    default:
+      console.log('This command is unknown');
+  }
+});
+
+const prefix = 'Command> ';
+rl.setPrompt(prefix, prefix.length);
+rl.prompt();

@@ -11,9 +11,9 @@ class SocketServer {
    * @param {String} address  Server address
    * @param {String} name     Server name
    */
-  constructor({ port, address, name }) {
+  constructor({ port, address, id }) {
     this.config = { port , address };
-    this.name = name;
+    this.name = id;
 
     this.server = null;
     this.socket = null;
