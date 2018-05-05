@@ -55,7 +55,7 @@ class PaywordComponent {
    * @param  {string} name              [description]
    * @param  {Object} certificate       [description]
    * @param  {String} [key='publicKey'] [description]
-   * @return {boolean}                   [description]
+   * @return {boolean}                  [description]
    */
   registerCertificate(name, certificate, key = 'publicKey') {
     const publicKey = certificate[key];

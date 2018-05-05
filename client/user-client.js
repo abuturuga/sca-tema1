@@ -64,6 +64,16 @@ class UserClient {
       });
   }
 
+  sendPay(ammount) {
+    const payment = this.service.pay(ammount);
+    this.vendorSocket.send({type: actions.SEND_PAY, payload: payment})
+      .onData(({type}) => {
+        if (type === actions.OPERATION_SUCCEED) {
+          console.log(`${prefix} payment is ok`);
+        }
+      });
+  }
+
 }
 
 const client = new UserClient(config.vendor, config.broker);
@@ -81,7 +91,7 @@ rl.on('line', line => {
       client.sendCommit();
       break;
     case 'pay':
-      client.pay(parseInt(args[1]));
+      client.sendPay(parseInt(args[1]));
       break;
     default:
       console.log('This command is unknown');

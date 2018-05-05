@@ -30,6 +30,19 @@ class VendorServer {
         }
         break;
       }
+      case actions.SEND_PAY: {
+        const isValid = this.service.addPayment(data.payload);
+
+        if (isValid === true) {
+          console.log(`${prefix} payment is valid`);
+          socket.write(JSON.stringify({
+            type: actions.OPERATION_SUCCEED
+          }));
+        } else {
+          console.log(`${prefix} payment is invalid: ${isValid}`);
+        }
+        break;
+      }
     }
   }
 
