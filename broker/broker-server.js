@@ -6,6 +6,8 @@ const SocketServer      = require('../socket/server'),
       config            = require('../config'),
       actions           = require('../shared/actions');
 
+const prefix = 'BANK::';
+
 class BrokerServer {
 
   constructor(config) {
@@ -34,6 +36,18 @@ class BrokerServer {
         }));
         console.log(`BANK:: User ${vendorCertificate.vendorId} is registred`);
         break;
+      }
+      case actions.SEND_VENDOR_PAYMENT: {
+        const isValid = this.service.registerVendorPayment(data.payload);
+
+        if (isValid === true) {
+          console.log(`${prefix} payment is valid`);
+          socket.write(JSON.stringify({
+            type: actions.OPERATION_SUCCEED
+          }));
+        } else {
+          console.log(`${prefix} payment is invalid: ${isValid}`);
+        }
       }
     }
   }

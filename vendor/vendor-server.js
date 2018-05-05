@@ -88,6 +88,16 @@ class VendorServer {
     }
   }
 
+  sendVendorPayment() {
+    const commit = this.service.sendCommit();
+    this.brokerSocket.send({type: actions.SEND_VENDOR_PAYMENT, payload: commit})
+      .onData(({type, payload}) => {
+        if(actions.OPERATION_SUCCEED) {
+          console.log(`${prefix} finish!!!`);
+        }
+      });
+  }
+
 }
 
 const server = new VendorServer(config.vendor, config.broker);
@@ -98,6 +108,9 @@ rl.on('line', line => {
   switch (line.trim()) {
     case 'register_broker':
       server.registerToBroker();
+      break;
+    case 'send_commit':
+      server.sendVendorPayment();
       break;
     default:
       console.log('This command is unknown');
