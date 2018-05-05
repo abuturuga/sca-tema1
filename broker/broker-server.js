@@ -41,7 +41,7 @@ class BrokerServer {
         const isValid = this.service.registerVendorPayment(data.payload);
 
         if (isValid === true) {
-          console.log(`${prefix} payment is valid`);
+          console.log(`${prefix} vendor recievied ${data.payload.i}`);
           socket.write(JSON.stringify({
             type: actions.OPERATION_SUCCEED
           }));

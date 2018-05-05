@@ -34,7 +34,7 @@ class VendorServer {
         const isValid = this.service.addPayment(data.payload);
 
         if (isValid === true) {
-          console.log(`${prefix} payment is valid`);
+          console.log(`${prefix} payment is valid ${data.payload.index}`);
           socket.write(JSON.stringify({
             type: actions.OPERATION_SUCCEED
           }));
